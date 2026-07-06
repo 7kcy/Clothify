@@ -657,17 +657,16 @@
     btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.25"/><path d="M8 5.5v5M5.5 8.5l2.5 2.5 2.5-2.5"/></svg> Loading…`;
 
     try {
-      const thumbRes = await fetch(
-        `https://thumbnails.roblox.com/v1/assets?assetIds=${encodeURIComponent(id)}&size=420x420&format=Png&isCircular=false`
-      );
-      if (!thumbRes.ok) throw new Error(`Could not reach Roblox (${thumbRes.status})`);
-      const thumbData = await thumbRes.json();
-      const thumbItem = thumbData?.data?.[0];
-      if (!thumbItem || thumbItem.state !== 'Completed' || !thumbItem.imageUrl) {
-        throw new Error('No template found for that ID. It may be private, moderated, or not an image-type asset.');
+      // Calls our own serverless function (same-origin) instead of
+      // thumbnails.roblox.com directly, which blocks browser CORS requests.
+      const proxyUrl = `/api/thumbnail?id=${encodeURIComponent(id)}`;
+      const checkRes = await fetch(proxyUrl);
+      if (!checkRes.ok) {
+        const errBody = await checkRes.json().catch(() => ({}));
+        throw new Error(errBody.error || `Could not load that asset (${checkRes.status}).`);
       }
 
-      currentImageUrl = thumbItem.imageUrl;
+      currentImageUrl = proxyUrl;
 
       img.src = currentImageUrl;
       img.style.display = 'block';
