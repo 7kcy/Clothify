@@ -71,7 +71,7 @@
       display: block;
     }
 
-    /* ACTION ROW — tight pill like Coffee */
+    /* ACTION ROW */
     .action-row {
       display: inline-flex;
       align-items: center;
@@ -89,7 +89,6 @@
       transform: translateY(0);
     }
 
-    /* Primary download button */
     .btn-primary {
       display: inline-flex;
       align-items: center;
@@ -107,10 +106,8 @@
       white-space: nowrap;
     }
     .btn-primary:hover { opacity: 0.85; }
-
     .btn-primary svg { width: 13px; height: 13px; flex-shrink: 0; }
 
-    /* Icon-only buttons */
     .btn-icon {
       width: 32px;
       height: 32px;
@@ -215,23 +212,6 @@
     }
     input[type="text"]:focus { border-color: #3a3a3a; }
     input[type="text"]::placeholder { color: #303030; }
-
-    .dl-btn {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px;
-      background: var(--text);
-      color: var(--bg);
-      border: none;
-      border-radius: 9px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      transition: opacity 0.15s;
-    }
-    .dl-btn:hover { opacity: 0.87; }
-    .dl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
     #status {
       margin-top: 10px;
@@ -356,6 +336,11 @@
     }
     .save-btn-main svg { width: 14px; height: 14px; flex-shrink: 0; }
     .save-btn-main:hover { border-color: #3a3a3a; background: #141414; }
+    .save-btn-main[disabled],
+    .save-btn-main.disabled {
+      pointer-events: none;
+      opacity: 0.3;
+    }
 
     /* STEPS */
     .step {
@@ -419,11 +404,10 @@
 <!-- ══ HOME ══ -->
 <div class="page active" id="page-home">
   <div class="home-logo" id="homeLogo">
-    <img src="Clothifyicon.png" alt="Clothify" />
+    <img src="Clothifyicon.png" alt="Clothify" onerror="this.style.display='none'" />
   </div>
 
   <div class="action-row" id="actionRow">
-    <!-- Primary -->
     <button class="btn-primary" onclick="showPage('page-downloader')">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M8 2v8M5 7l3 3 3-3"/><path d="M2 11v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
@@ -431,7 +415,6 @@
       Download
     </button>
 
-    <!-- FAQ icon -->
     <button class="btn-icon" title="FAQ" onclick="showPage('page-faq')">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="8" cy="8" r="6.25"/>
@@ -440,7 +423,6 @@
       </svg>
     </button>
 
-    <!-- How to use icon -->
     <button class="btn-icon" title="How to use" onclick="showPage('page-howto')">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <rect x="2.75" y="1.75" width="10.5" height="12.5" rx="1.5"/>
@@ -463,15 +445,14 @@
     </button>
 
     <div class="inner-header">
-      <div class="inner-logo"><img src="Clothifyicon.png" alt="Clothify" /></div>
+      <div class="inner-logo"><img src="Clothifyicon.png" alt="Clothify" onerror="this.style.display='none'" /></div>
       <h2>Download Template</h2>
-      <p>Enter a classic Roblox clothing asset ID.</p>
+      <p>Enter a classic Roblox clothing asset ID or paste the catalog URL.</p>
     </div>
 
-    <label class="field-label" for="assetId">Asset ID</label>
-    <input type="text" id="assetId" placeholder="e.g. 123456789" autocomplete="off" />
+    <label class="field-label" for="assetId">Asset ID or URL</label>
+    <input type="text" id="assetId" placeholder="e.g. 123456789 or a catalog link" autocomplete="off" />
 
-    <!-- Preview box -->
     <div class="preview-box" id="previewBox">
       <div class="preview-placeholder" id="previewPlaceholder">
         <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
@@ -490,18 +471,18 @@
     <div id="status"></div>
 
     <div class="action-btns">
-      <button class="dl-btn" id="dlBtn" onclick="downloadTemplate()">
+      <button class="dl-btn" id="dlBtn" onclick="loadTemplate()">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="8" cy="8" r="6.25"/><path d="M8 5.5v5M5.5 8.5l2.5 2.5 2.5-2.5"/>
         </svg>
         Load template
       </button>
-      <a class="save-btn-main" id="saveLink" href="#" download style="pointer-events:none;opacity:0.3;">
+      <button class="save-btn-main disabled" id="saveBtn" onclick="saveTemplate()">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M8 2v8M5 7l3 3 3-3"/><path d="M2 11v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
         </svg>
         Download
-      </a>
+      </button>
     </div>
 
     <div id="previewId" style="font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;"></div>
@@ -519,22 +500,22 @@
     </button>
 
     <div class="inner-header">
-      <div class="inner-logo"><img src="Clothifyicon.png" alt="Clothify" /></div>
+      <div class="inner-logo"><img src="Clothifyicon.png" alt="Clothify" onerror="this.style.display='none'" /></div>
       <h2>FAQ</h2>
       <p>Common questions about Clothify.</p>
     </div>
 
     <div class="faq-item open">
       <button class="faq-q" onclick="toggleFaq(this)">What does Clothify download?<span class="faq-chevron">⌄</span></button>
-      <div class="faq-a">It pulls the underlying template PNG from classic Roblox shirts and pants — the flat file you edit in any image editor.</div>
+      <div class="faq-a">It pulls the underlying template image from a Roblox clothing asset — the flat file you edit in any image editor.</div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Do I paste the full URL?<span class="faq-chevron">⌄</span></button>
-      <div class="faq-a">No — just the numeric ID from the URL. It looks like roblox.com/catalog/123456789/...</div>
+      <div class="faq-a">Either works. Paste the numeric asset ID, or paste the full catalog/creator link and Clothify will pull the ID out of it automatically.</div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Why isn't my item loading?<span class="faq-chevron">⌄</span></button>
-      <div class="faq-a">Most common reasons: invalid ID, non-classic item type (layered clothing won't work), or Roblox asset restrictions.</div>
+      <div class="faq-a">Most common reasons: invalid ID, a private or moderated asset, or an item type that doesn't have an image thumbnail.</div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Is this free?<span class="faq-chevron">⌄</span></button>
@@ -558,7 +539,7 @@
     </button>
 
     <div class="inner-header">
-      <div class="inner-logo"><img src="Clothifyicon.png" alt="Clothify" /></div>
+      <div class="inner-logo"><img src="Clothifyicon.png" alt="Clothify" onerror="this.style.display='none'" /></div>
       <h2>How to Use</h2>
       <p>Get your template in seconds.</p>
     </div>
@@ -567,35 +548,36 @@
       <span class="step-num">01</span>
       <div>
         <strong>Find the item on Roblox</strong>
-        <p>Open the catalog and find the classic shirt or pants you want.</p>
+        <p>Open the catalog and find the shirt or pants you want.</p>
       </div>
     </div>
     <div class="step">
       <span class="step-num">02</span>
       <div>
         <strong>Copy the asset ID</strong>
-        <p>Grab the number from the URL — roblox.com/catalog/<strong>123456789</strong>/...</p>
+        <p>Grab the number from the URL — roblox.com/catalog/<strong>123456789</strong>/... — or just copy the whole link.</p>
       </div>
     </div>
     <div class="step">
       <span class="step-num">03</span>
       <div>
         <strong>Paste it into Clothify</strong>
-        <p>Hit Download on the home page, paste the ID, and press Download template.</p>
+        <p>Hit Download on the home page, paste the ID or link, and press Load template.</p>
       </div>
     </div>
     <div class="step">
       <span class="step-num">04</span>
       <div>
         <strong>Preview and save</strong>
-        <p>The template loads as a preview. Hit Save image to download the PNG.</p>
+        <p>The template loads as a preview. Hit Download to save the PNG.</p>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  const API_BASE = window.location.origin;
+  let currentImageUrl = null;
+  let currentId = null;
 
   function showPage(id) {
     const current = document.querySelector('.page.active');
@@ -617,7 +599,6 @@
 
   function goHome() { showPage('page-home'); }
 
-  // Home entrance animation
   window.addEventListener('load', () => {
     const home = document.getElementById('page-home');
     home.classList.add('visible');
@@ -626,67 +607,77 @@
     setTimeout(() => document.getElementById('tagline').classList.add('in'), 280);
   });
 
-  async function downloadTemplate() {
+  // Pulls a numeric asset ID out of either a bare ID or a full Roblox URL
+  function extractId(raw) {
+    raw = (raw || '').trim();
+    const match = raw.match(/(\d{5,})/);
+    return match ? match[1] : null;
+  }
+
+  function setSaveEnabled(enabled) {
+    const saveBtn = document.getElementById('saveBtn');
+    if (enabled) {
+      saveBtn.classList.remove('disabled');
+      saveBtn.removeAttribute('disabled');
+    } else {
+      saveBtn.classList.add('disabled');
+      saveBtn.setAttribute('disabled', 'true');
+    }
+  }
+
+  async function loadTemplate() {
     const input = document.getElementById('assetId');
     const status = document.getElementById('status');
     const btn = document.getElementById('dlBtn');
-    const saveLink = document.getElementById('saveLink');
     const placeholder = document.getElementById('previewPlaceholder');
     const loading = document.getElementById('previewLoading');
     const img = document.getElementById('templateImg');
     const previewId = document.getElementById('previewId');
-    const id = input.value.trim();
+
+    const id = extractId(input.value);
 
     status.className = '';
     status.textContent = '';
 
-    if (!id) { status.className = 'err'; status.textContent = 'Enter an asset ID.'; return; }
-    if (!/^\d+$/.test(id)) { status.className = 'err'; status.textContent = 'IDs are numbers only.'; return; }
+    if (!id) {
+      status.className = 'err';
+      status.textContent = 'Enter a valid asset ID or catalog link.';
+      return;
+    }
 
-    // show spinner, hide others
     placeholder.style.display = 'none';
     img.style.display = 'none';
     loading.style.display = 'flex';
-    saveLink.style.pointerEvents = 'none';
-    saveLink.style.opacity = '0.3';
+    setSaveEnabled(false);
+    currentImageUrl = null;
+    currentId = id;
     previewId.textContent = '';
 
     btn.disabled = true;
     btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.25"/><path d="M8 5.5v5M5.5 8.5l2.5 2.5 2.5-2.5"/></svg> Loading…`;
 
     try {
-      // Fetch thumbnail URL from Roblox (browser-accessible, CORS allowed)
       const thumbRes = await fetch(
-        `https://thumbnails.roblox.com/v1/assets?assetIds=${encodeURIComponent(id)}&returnPolicy=PlaceHolder&size=420x420&format=Png&isCircular=false`
+        `https://thumbnails.roblox.com/v1/assets?assetIds=${encodeURIComponent(id)}&size=420x420&format=Png&isCircular=false`
       );
       if (!thumbRes.ok) throw new Error(`Could not reach Roblox (${thumbRes.status})`);
       const thumbData = await thumbRes.json();
       const thumbItem = thumbData?.data?.[0];
       if (!thumbItem || thumbItem.state !== 'Completed' || !thumbItem.imageUrl) {
-        throw new Error('Thumbnail not available. Check the ID is a classic shirt or pants.');
+        throw new Error('No template found for that ID. It may be private, moderated, or not an image-type asset.');
       }
 
-      const imageUrl = thumbItem.imageUrl;
+      currentImageUrl = thumbItem.imageUrl;
 
-      // Display preview via <img src> — works cross-origin for display
-      img.src = imageUrl;
+      img.src = currentImageUrl;
       img.style.display = 'block';
       loading.style.display = 'none';
 
-      // Download: open in new tab so user can right-click → Save image
-      saveLink.href = '#';
-      saveLink.removeAttribute('download');
-      saveLink.onclick = (e) => {
-        e.preventDefault();
-        window.open(imageUrl, '_blank');
-      };
-      saveLink.style.pointerEvents = 'auto';
-      saveLink.style.opacity = '1';
-
+      setSaveEnabled(true);
       previewId.textContent = `ID ${id}`;
       status.className = 'ok';
-      status.textContent = 'Template loaded — click Save to open and download.';
-    } catch(err) {
+      status.textContent = 'Template loaded — click Download to save the PNG.';
+    } catch (err) {
       loading.style.display = 'none';
       placeholder.style.display = 'flex';
       status.className = 'err';
@@ -694,6 +685,31 @@
     } finally {
       btn.disabled = false;
       btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.25"/><path d="M8 5.5v5M5.5 8.5l2.5 2.5 2.5-2.5"/></svg> Load template`;
+    }
+  }
+
+  async function saveTemplate() {
+    if (!currentImageUrl) return;
+    const status = document.getElementById('status');
+
+    try {
+      // Try a real file download via blob first
+      const res = await fetch(currentImageUrl);
+      if (!res.ok) throw new Error('fetch failed');
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `clothify-${currentId}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      // Fallback: open the image in a new tab so the user can save it manually
+      window.open(currentImageUrl, '_blank');
+      status.className = 'ok';
+      status.textContent = 'Opened in a new tab — right-click and "Save image" to download.';
     }
   }
 
@@ -705,7 +721,7 @@
   }
 
   document.getElementById('assetId').addEventListener('keydown', e => {
-    if (e.key === 'Enter') downloadTemplate();
+    if (e.key === 'Enter') loadTemplate();
   });
 </script>
 </body>
