@@ -658,15 +658,21 @@
 
     try {
       // Calls our own serverless function (same-origin) instead of
-      // thumbnails.roblox.com directly, which blocks browser CORS requests.
+      // thumbnails.roblox.com / assetdelivery.roblox.com directly, which
+      // block browser CORS requests.
       const proxyUrl = `/api/thumbnail?id=${encodeURIComponent(id)}`;
-      const checkRes = await fetch(proxyUrl);
-      if (!checkRes.ok) {
-        const errBody = await checkRes.json().catch(() => ({}));
-        throw new Error(errBody.error || `Could not load that asset (${checkRes.status}).`);
+      const proxyRes = await fetch(proxyUrl);
+
+      if (!proxyRes.ok) {
+        const errBody = await proxyRes.json().catch(() => ({}));
+        throw new Error(errBody.error || `Could not load that asset (${proxyRes.status}).`);
       }
 
-      currentImageUrl = proxyUrl;
+      const source = proxyRes.headers.get('X-Clothify-Source'); // 'template' or 'rig'
+      const blob = await proxyRes.blob();
+
+      if (currentImageUrl) URL.revokeObjectURL(currentImageUrl);
+      currentImageUrl = URL.createObjectURL(blob);
 
       img.src = currentImageUrl;
       img.style.display = 'block';
@@ -674,8 +680,14 @@
 
       setSaveEnabled(true);
       previewId.textContent = `ID ${id}`;
-      status.className = 'ok';
-      status.textContent = 'Template loaded — click Download to save the PNG.';
+
+      if (source === 'rig') {
+        status.className = '';
+        status.textContent = 'Flat template not found — showing the rendered preview instead.';
+      } else {
+        status.className = 'ok';
+        status.textContent = 'Template loaded — click Download to save the PNG.';
+      }
     } catch (err) {
       loading.style.display = 'none';
       placeholder.style.display = 'flex';
@@ -687,29 +699,16 @@
     }
   }
 
-  async function saveTemplate() {
+  function saveTemplate() {
     if (!currentImageUrl) return;
-    const status = document.getElementById('status');
-
-    try {
-      // Try a real file download via blob first
-      const res = await fetch(currentImageUrl);
-      if (!res.ok) throw new Error('fetch failed');
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `clothify-${currentId}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      // Fallback: open the image in a new tab so the user can save it manually
-      window.open(currentImageUrl, '_blank');
-      status.className = 'ok';
-      status.textContent = 'Opened in a new tab — right-click and "Save image" to download.';
-    }
+    // currentImageUrl is already a local blob URL from loadTemplate(),
+    // so this is a same-origin download — no fetch or CORS involved.
+    const a = document.createElement('a');
+    a.href = currentImageUrl;
+    a.download = `clothify-${currentId}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   function toggleFaq(btn) {
